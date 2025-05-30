@@ -25,6 +25,7 @@ var starter = flag.String("starter", "", "Pick a starter word instead of using t
 var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually. Use \"random\" to choose one at random.")
 var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
+var guesses = flag.Int("guesses", 6, "The amount of guesses to allow. Set to 0 for unlimited guesses. (This might loop infinitely for some strategies.)")
 var strategy games.Strategy
 var dictionary = []string{}
 
@@ -84,7 +85,7 @@ func run() string {
 	}
 	game := games.NewGame(dictionary, strategy, *hard)
 	rows := []row{}
-	for nthGuess := 0; nthGuess < 6; nthGuess++ {
+	for nthGuess := 0; *guesses == 0 || nthGuess < *guesses; nthGuess++ {
 		var (
 			guess               string
 			projectedGuessScore float64
