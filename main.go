@@ -20,34 +20,26 @@ type row struct {
 	information         games.Information
 }
 
-var flagDictionary = flag.String("dictionary", "core,common", "The words to allow as the solution and as a guess. A comma separated list of core, common, uncommon, obscure or sanbox, which correspond to their respective Linku categories.")
+var flagDictionary = flag.String("dictionary", "core,common", "The words to allow as the solution. A comma separated list of core, common, uncommon, obscure or sanbox, which correspond to their respective Linku categories.")
+var flagGuessDictionary = flag.String("guessdictionary", "", "The words to allow for guessing. A comma separated list of core, common, uncommon, obscure or sanbox, which correspond to their respective Linku categories. (default is the regular word dictionary)")
 var starter = flag.String("starter", "", "Pick a starter word instead of using the strategy. Use \"random\" to choose one at random.")
 var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually. Use \"random\" to choose one at random.")
 var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
-var guesses = flag.Int("guesses", 6, "The amount of guesses to allow. Set to 0 for unlimited guesses. (This might loop infinitely for some strategies.)")
+var guesses = flag.Int("guesses", 6, "The amount of guesses to allow. Set to 0 for unlimited guesses. (This might loop infinitely for some configurations.)")
 var strategy games.Strategy
 var dictionary = []string{}
+var guessDictionary = []string{}
 
 func parseFlags() string {
 	flag.Parse()
-	wordCategories := strings.Split((*flagDictionary), ",")
-	for _, category := range wordCategories {
-		switch category {
-		case "core":
-			dictionary = append(dictionary, games.CoreWords...)
-		case "common":
-			dictionary = append(dictionary, games.CommonWords...)
-		case "uncommon":
-			dictionary = append(dictionary, games.UncommonWords...)
-		case "obscure":
-			dictionary = append(dictionary, games.ObscureWords...)
-		case "sandbox":
-			dictionary = append(dictionary, games.SandboxWords...)
-		case " ", "":
-		default:
-			return "Invalid word category: " + category
-		}
+	if msg := parseDictionary(*flagDictionary, &dictionary); msg != "" {
+		return msg
+	}
+	if *flagGuessDictionary == "" {
+		guessDictionary = dictionary
+	} else if msg := parseDictionary(*flagGuessDictionary, &guessDictionary); msg != "" {
+		return msg
 	}
 	if *starter == "random" {
 		*starter = dictionary[rand.N(len(dictionary))]
@@ -68,6 +60,28 @@ func parseFlags() string {
 	return ""
 }
 
+func parseDictionary(dictionaryString string, dictionary *[]string) string {
+	wordCategories := strings.Split(dictionaryString, ",")
+	for _, category := range wordCategories {
+		switch category {
+		case "core":
+			*dictionary = append(*dictionary, games.CoreWords...)
+		case "common":
+			*dictionary = append(*dictionary, games.CommonWords...)
+		case "uncommon":
+			*dictionary = append(*dictionary, games.UncommonWords...)
+		case "obscure":
+			*dictionary = append(*dictionary, games.ObscureWords...)
+		case "sandbox":
+			*dictionary = append(*dictionary, games.SandboxWords...)
+		case " ", "":
+		default:
+			return "Invalid word category: " + category
+		}
+	}
+	return ""
+}
+
 func main() {
 	if msg := run(); msg != "" {
 		fmt.Fprintln(os.Stderr, msg)
@@ -83,7 +97,7 @@ func run() string {
 	if err != nil {
 		return "Failed initializing readline: " + err.Error()
 	}
-	game := games.NewGame(dictionary, strategy, *hard)
+	game := games.NewGame(dictionary, guessDictionary, strategy, *hard)
 	rows := []row{}
 	for nthGuess := 0; *guesses == 0 || nthGuess < *guesses; nthGuess++ {
 		var (

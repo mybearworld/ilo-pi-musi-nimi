@@ -39,10 +39,10 @@ type Game struct {
 	Hard          bool
 }
 
-func NewGame(dictionary []string, strategy Strategy, hard bool) Game {
+func NewGame(dictionary []string, guessDictionary []string, strategy Strategy, hard bool) Game {
 	return Game{
 		possibleWords: dictionary,
-		dictionary:    dictionary,
+		dictionary:    guessDictionary,
 		Strategy:      strategy,
 		Hard:          hard,
 	}
