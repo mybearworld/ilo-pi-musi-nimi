@@ -55,7 +55,7 @@ func run() string {
 	}
 	game := games.NewGame(*worst, *hard)
 	rows := []row{}
-	for nthGuess := 0; ; nthGuess++ {
+	for nthGuess := 0; nthGuess < 6; nthGuess++ {
 		var (
 			guess               string
 			projectedGuessScore float64
