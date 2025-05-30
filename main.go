@@ -90,7 +90,10 @@ func run() string {
 				return "Failed getting input: " + err.Error()
 			}
 		}
-		guessScore := game.Information(information)
+		guessScore, err := game.Information(information)
+		if err != nil {
+			return "Failed processing information: " + err.Error()
+		}
 		rows = append(rows, row{
 			guess: guess, projectedGuessScore: projectedGuessScore, guessScore: guessScore, information: information,
 		})

@@ -99,15 +99,18 @@ func (g Game) ScoreGuess(guess string) float64 {
 	return average
 }
 
-func (g *Game) Information(information Information) int {
+func (g *Game) Information(information Information) (int, error) {
 	newPossibleWords := []string{}
 	for _, possibleWord := range g.possibleWords {
 		if information.Matches(possibleWord) {
 			newPossibleWords = append(newPossibleWords, possibleWord)
 		}
 	}
+	if len(newPossibleWords) == 0 {
+		return 0, errors.New("no valid words left")
+	}
 	g.possibleWords = newPossibleWords
-	return len(newPossibleWords)
+	return len(newPossibleWords), nil
 }
 
 func avg(arr []int) float64 {
