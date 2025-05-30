@@ -21,12 +21,30 @@ type row struct {
 
 var starter = flag.String("starter", "", "Pick a starter word instead of using the best one. Use \"random\" to choose one at random.")
 
-func main() {
+func parseFlags() string {
 	flag.Parse()
+	if *starter == "random" {
+		*starter = games.AllWords[rand.N(len(games.AllWords))]
+	} else if *starter != "" && len(*starter) != 4 {
+		return "Starter must be four characters long"
+	}
+	return ""
+}
+
+func main() {
+	if msg := run(); msg != "" {
+		fmt.Fprintln(os.Stderr, msg)
+		os.Exit(1)
+	}
+}
+
+func run() string {
+	if msg := parseFlags(); msg != "" {
+		return msg
+	}
 	rl, err := readline.New("")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed initializing readline: %v\n", err)
-		os.Exit(1)
+		return "Failed initializing readline: " + err.Error()
 	}
 	game := games.NewGame()
 	rows := []row{}
@@ -37,22 +55,17 @@ func main() {
 		)
 		if nthGuess == 0 && *starter != "" {
 			guess = *starter
-			if guess == "random" {
-				guess = games.AllWords[rand.N(len(games.AllWords)-1)]
-			}
 			averageWordsLeft = game.ScoreGuess(guess)
 		} else {
 			guess, averageWordsLeft, err = game.MakeGuess()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed getting the next guess: %v\n", err)
-				os.Exit(1)
+				return "Failed getting the next guess: " + err.Error()
 			}
 		}
 		fmt.Printf("I guess %s.\n", guess)
 		information, err := inputInformation(rl, guess)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed getting input: %v\n", err)
-			os.Exit(1)
+			return "Failed getting input: " + err.Error()
 		}
 		realWordsLeft := game.Information(information)
 		rows = append(rows, row{
@@ -70,6 +83,7 @@ func main() {
 		}
 		fmt.Printf("%s %s %f %s\n", emojify(row.information), row.guess, row.averageWordsLeft, realWordsLeftString)
 	}
+	return ""
 }
 
 func inputInformation(rl *readline.Instance, guess string) (games.Information, error) {
