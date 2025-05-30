@@ -5,7 +5,14 @@ import (
 	"math/rand/v2"
 )
 
-var AllWords []string = []string{"anpa", "ante", "awen", "esun", "insa", "jaki", "jelo", "kala", "kama", "kasi", "kili", "kule", "kute", "lape", "laso", "lawa", "lete", "lili", "lipu", "loje", "luka", "lupa", "mama", "mani", "moku", "moli", "musi", "mute", "nasa", "nena", "nimi", "noka", "olin", "open", "pali", "pana", "pini", "pipi", "poka", "poki", "pona", "sama", "seli", "selo", "seme", "sewi", "sike", "sina", "sona", "suli", "suno", "supa", "suwi", "taso", "tawa", "telo", "toki", "tomo", "unpa", "walo", "waso", "wawa", "weka", "wile", "leko", "meli", "mije", "soko"}
+// Words from Linku licensed under Creative Commons Attribution-ShareAlike 4.0 International
+var (
+	CoreWords     = []string{"anpa", "ante", "awen", "esun", "insa", "jaki", "jelo", "kala", "kama", "kasi", "kili", "kule", "kute", "lape", "laso", "lawa", "lete", "lili", "lipu", "loje", "luka", "lupa", "mama", "mani", "moku", "moli", "musi", "mute", "nasa", "nena", "nimi", "noka", "olin", "open", "pali", "pana", "pini", "pipi", "poka", "poki", "pona", "sama", "seli", "selo", "seme", "sewi", "sike", "sina", "sona", "suli", "suno", "supa", "suwi", "taso", "tawa", "telo", "toki", "tomo", "unpa", "walo", "waso", "wawa", "weka", "wile"}
+	CommonWords   = []string{"leko", "meli", "mije", "soko"}
+	UncommonWords = []string{"meso"}
+	ObscureWords  = []string{"jami", "kiki", "misa", "pake", "pika", "powe", "puwa", "soto", "taki", "teje"}
+	SandboxWords  = []string{"kisa", "anta", "enko", "inta", "jaku", "jans", "jatu", "jepi", "jipi", "jule", "jume", "juna", "jupi", "kajo", "kana", "kapa", "kelo", "kepa", "kese", "kewe", "kewi", "kolo", "kulu", "lisa", "loka", "loku", "natu", "neja", "nele", "nowi", "nuwa", "omen", "papa", "papa", "papa", "pata", "patu", "pela", "peta", "peto", "pipo", "poni", "saja", "salu", "samu", "sipi", "sole", "suke", "take", "teki", "toma", "tona", "tuli", "wisa", "wiwi", "yutu"}
+)
 
 type Strategy string
 
@@ -27,13 +34,15 @@ func ToStrategy(s string) *Strategy {
 
 type Game struct {
 	possibleWords []string
+	dictionary    []string
 	Strategy      Strategy
 	Hard          bool
 }
 
-func NewGame(strategy Strategy, hard bool) Game {
+func NewGame(dictionary []string, strategy Strategy, hard bool) Game {
 	return Game{
-		possibleWords: AllWords,
+		possibleWords: dictionary,
+		dictionary:    dictionary,
 		Strategy:      strategy,
 		Hard:          hard,
 	}
@@ -51,7 +60,7 @@ func (g Game) MakeGuess() (string, float64, error) {
 }
 
 func (g Game) makeGuessByWordScore() (string, float64, error) {
-	bestGuessScore := float64(len(AllWords))
+	bestGuessScore := float64(len(g.dictionary))
 	if g.Strategy == MaxWords {
 		bestGuessScore = -1
 	}
@@ -76,7 +85,7 @@ func (g Game) makeRandomGuess() (string, float64, error) {
 }
 
 func (g Game) pool() []string {
-	guessPool := AllWords
+	guessPool := g.dictionary
 	if g.Hard {
 		guessPool = g.possibleWords
 	}

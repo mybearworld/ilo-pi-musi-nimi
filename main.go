@@ -20,22 +20,42 @@ type row struct {
 	information         games.Information
 }
 
+var flagDictionary = flag.String("dictionary", "core,common", "The words to allow as the solution and as a guess. A comma separated list of core, common, uncommon, obscure or sanbox, which correspond to their respective Linku categories.")
 var starter = flag.String("starter", "", "Pick a starter word instead of using the strategy. Use \"random\" to choose one at random.")
 var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually. Use \"random\" to choose one at random.")
 var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
 var strategy games.Strategy
+var dictionary = []string{}
 
 func parseFlags() string {
 	flag.Parse()
+	wordCategories := strings.Split((*flagDictionary), ",")
+	for _, category := range wordCategories {
+		switch category {
+		case "core":
+			dictionary = append(dictionary, games.CoreWords...)
+		case "common":
+			dictionary = append(dictionary, games.CommonWords...)
+		case "uncommon":
+			dictionary = append(dictionary, games.UncommonWords...)
+		case "obscure":
+			dictionary = append(dictionary, games.ObscureWords...)
+		case "sandbox":
+			dictionary = append(dictionary, games.SandboxWords...)
+		case " ", "":
+		default:
+			return "Invalid word category: " + category
+		}
+	}
 	if *starter == "random" {
-		*starter = games.AllWords[rand.N(len(games.AllWords))]
+		*starter = dictionary[rand.N(len(dictionary))]
 	} else if *starter != "" && len(*starter) != 4 {
 		return "Starter must be four characters long"
 	}
 	if *word == "random" {
-		*word = games.AllWords[rand.N(len(games.AllWords))]
-	} else if *word != "" && !slices.Contains(games.AllWords, *word) {
+		*word = dictionary[rand.N(len(dictionary))]
+	} else if *word != "" && !slices.Contains(dictionary, *word) {
 		return "Word must be a valid 4-letter toki pona word."
 	}
 	parsedStrategy := games.ToStrategy(*flagStrategy)
@@ -62,7 +82,7 @@ func run() string {
 	if err != nil {
 		return "Failed initializing readline: " + err.Error()
 	}
-	game := games.NewGame(strategy, *hard)
+	game := games.NewGame(dictionary, strategy, *hard)
 	rows := []row{}
 	for nthGuess := 0; nthGuess < 6; nthGuess++ {
 		var (
