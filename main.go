@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -20,7 +21,8 @@ type row struct {
 }
 
 var starter = flag.String("starter", "", "Pick a starter word instead of using the best one. Use \"random\" to choose one at random.")
-var worst = flag.Bool("worst", false, "Always use the worst available guess instead of the best one. This is not particularly interesting without also enabling -hard.")
+var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually.")
+var worst = flag.Bool("worst", false, "Always use the worst available guess instead of the best one. This option works best with -hard.")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
 
 func parseFlags() string {
@@ -29,6 +31,9 @@ func parseFlags() string {
 		*starter = games.AllWords[rand.N(len(games.AllWords))]
 	} else if *starter != "" && len(*starter) != 4 {
 		return "Starter must be four characters long"
+	}
+	if *word != "" && !slices.Contains(games.AllWords, *word) {
+		return "Word must be a valid 4-letter toki pona word."
 	}
 	return ""
 }
@@ -64,10 +69,17 @@ func run() string {
 				return "Failed getting the next guess: " + err.Error()
 			}
 		}
-		fmt.Printf("I guess %s.\n", guess)
-		information, err := inputInformation(rl, guess)
-		if err != nil {
-			return "Failed getting input: " + err.Error()
+		if *word == "" {
+			fmt.Printf("I guess %s.\n", guess)
+		}
+		var information games.Information
+		if *word != "" {
+			information = games.GetInformation(guess, *word)
+		} else {
+			information, err = inputInformation(rl, guess)
+			if err != nil {
+				return "Failed getting input: " + err.Error()
+			}
 		}
 		guessScore := game.Information(information)
 		rows = append(rows, row{
@@ -77,7 +89,9 @@ func run() string {
 			break
 		}
 	}
-	fmt.Println()
+	if *word == "" {
+		fmt.Println()
+	}
 	for _, row := range rows {
 		realWordsLeftString := strconv.Itoa(row.guessScore)
 		if row.information.Success() {
