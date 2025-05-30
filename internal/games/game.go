@@ -2,7 +2,7 @@ package games
 
 import "errors"
 
-var allWords []string = []string{"anpa", "ante", "awen", "esun", "insa", "jaki", "jelo", "kala", "kama", "kasi", "kili", "kule", "kute", "lape", "laso", "lawa", "lete", "lili", "lipu", "loje", "luka", "lupa", "mama", "mani", "moku", "moli", "musi", "mute", "nasa", "nena", "nimi", "noka", "olin", "open", "pali", "pana", "pini", "pipi", "poka", "poki", "pona", "sama", "seli", "selo", "seme", "sewi", "sike", "sina", "sona", "suli", "suno", "supa", "suwi", "taso", "tawa", "telo", "toki", "tomo", "unpa", "walo", "waso", "wawa", "weka", "wile", "leko", "meli", "mije", "soko"}
+var AllWords []string = []string{"anpa", "ante", "awen", "esun", "insa", "jaki", "jelo", "kala", "kama", "kasi", "kili", "kule", "kute", "lape", "laso", "lawa", "lete", "lili", "lipu", "loje", "luka", "lupa", "mama", "mani", "moku", "moli", "musi", "mute", "nasa", "nena", "nimi", "noka", "olin", "open", "pali", "pana", "pini", "pipi", "poka", "poki", "pona", "sama", "seli", "selo", "seme", "sewi", "sike", "sina", "sona", "suli", "suno", "supa", "suwi", "taso", "tawa", "telo", "toki", "tomo", "unpa", "walo", "waso", "wawa", "weka", "wile", "leko", "meli", "mije", "soko"}
 
 type Game struct {
 	possibleWords []string
@@ -10,35 +10,40 @@ type Game struct {
 
 func NewGame() Game {
 	return Game{
-		possibleWords: allWords,
+		possibleWords: AllWords,
 	}
 }
 
 func (g Game) MakeGuess() (string, float64, error) {
-	minWordsAfterBestGuess := float64(len(allWords))
+	bestGuessScore := float64(len(AllWords))
 	bestGuess := ""
-	for _, guess := range allWords {
-		wordsAfterGuessAmounts := []int{}
-		for _, word := range g.possibleWords {
-			information := GetInformation(guess, word)
-			wordsAfterGuess := 0
-			for _, wordAfterGuess := range g.possibleWords {
-				if wordAfterGuess != guess && information.Matches(wordAfterGuess) {
-					wordsAfterGuess += 1
-				}
-			}
-			wordsAfterGuessAmounts = append(wordsAfterGuessAmounts, wordsAfterGuess)
-		}
-		average := avg(wordsAfterGuessAmounts)
-		if average < minWordsAfterBestGuess {
-			minWordsAfterBestGuess = average
+	for _, guess := range AllWords {
+		guessScore := g.ScoreGuess(guess)
+		if guessScore < bestGuessScore {
+			bestGuessScore = guessScore
 			bestGuess = guess
 		}
 	}
 	if bestGuess == "" {
 		return "", 0, errors.New("couldn't find a valid guess")
 	}
-	return bestGuess, minWordsAfterBestGuess, nil
+	return bestGuess, bestGuessScore, nil
+}
+
+func (g Game) ScoreGuess(guess string) float64 {
+	wordsAfterGuessAmounts := []int{}
+	for _, word := range g.possibleWords {
+		information := GetInformation(guess, word)
+		wordsAfterGuess := 0
+		for _, wordAfterGuess := range g.possibleWords {
+			if wordAfterGuess != guess && information.Matches(wordAfterGuess) {
+				wordsAfterGuess += 1
+			}
+		}
+		wordsAfterGuessAmounts = append(wordsAfterGuessAmounts, wordsAfterGuess)
+	}
+	average := avg(wordsAfterGuessAmounts)
+	return average
 }
 
 func (g *Game) Information(information Information) int {

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"strconv"
 	"strings"
@@ -17,7 +19,10 @@ type row struct {
 	information      games.Information
 }
 
+var starter = flag.String("starter", "", "Pick a starter word instead of using the best one. Use \"random\" to choose one at random.")
+
 func main() {
+	flag.Parse()
 	rl, err := readline.New("")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed initializing readline: %v\n", err)
@@ -25,11 +30,23 @@ func main() {
 	}
 	game := games.NewGame()
 	rows := []row{}
-	for {
-		guess, averageWordsLeft, err := game.MakeGuess()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed getting the next guess: %v\n", err)
-			os.Exit(1)
+	for nthGuess := 0; ; nthGuess++ {
+		var (
+			guess            string
+			averageWordsLeft float64
+		)
+		if nthGuess == 0 && *starter != "" {
+			guess = *starter
+			if guess == "random" {
+				guess = games.AllWords[rand.N(len(games.AllWords)-1)]
+			}
+			averageWordsLeft = game.ScoreGuess(guess)
+		} else {
+			guess, averageWordsLeft, err = game.MakeGuess()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Failed getting the next guess: %v\n", err)
+				os.Exit(1)
+			}
 		}
 		fmt.Printf("I guess %s.\n", guess)
 		information, err := inputInformation(rl, guess)
