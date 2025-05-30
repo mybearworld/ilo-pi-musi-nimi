@@ -21,7 +21,7 @@ type row struct {
 }
 
 var starter = flag.String("starter", "", "Pick a starter word instead of using the strategy. Use \"random\" to choose one at random.")
-var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually.")
+var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually. Use \"random\" to choose one at random.")
 var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
 var strategy games.Strategy
@@ -33,7 +33,9 @@ func parseFlags() string {
 	} else if *starter != "" && len(*starter) != 4 {
 		return "Starter must be four characters long"
 	}
-	if *word != "" && !slices.Contains(games.AllWords, *word) {
+	if *word == "random" {
+		*word = games.AllWords[rand.N(len(games.AllWords))]
+	} else if *word != "" && !slices.Contains(games.AllWords, *word) {
 		return "Word must be a valid 4-letter toki pona word."
 	}
 	parsedStrategy := games.ToStrategy(*flagStrategy)
