@@ -122,6 +122,10 @@ func inputInformation(rl *readline.Instance, guess string) (games.Information, e
 		if err != nil {
 			return information, err
 		}
+		if len(line) != 4 {
+			fmt.Println("This needs to be four characters long.")
+			continue
+		}
 		succeeded := true
 		for index, letter := range line {
 			switch letter {
