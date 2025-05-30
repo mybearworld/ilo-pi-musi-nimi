@@ -6,20 +6,31 @@ var AllWords []string = []string{"anpa", "ante", "awen", "esun", "insa", "jaki",
 
 type Game struct {
 	possibleWords []string
+	Worst         bool
+	Hard          bool
 }
 
-func NewGame() Game {
+func NewGame(worst bool, hard bool) Game {
 	return Game{
 		possibleWords: AllWords,
+		Worst:         worst,
+		Hard:          hard,
 	}
 }
 
 func (g Game) MakeGuess() (string, float64, error) {
 	bestGuessScore := float64(len(AllWords))
+	if g.Worst {
+		bestGuessScore = -1
+	}
 	bestGuess := ""
-	for _, guess := range AllWords {
+	guessPool := AllWords
+	if g.Hard {
+		guessPool = g.possibleWords
+	}
+	for _, guess := range guessPool {
 		guessScore := g.ScoreGuess(guess)
-		if guessScore < bestGuessScore {
+		if (g.Worst && guessScore > bestGuessScore) || (!g.Worst && guessScore < bestGuessScore) {
 			bestGuessScore = guessScore
 			bestGuess = guess
 		}

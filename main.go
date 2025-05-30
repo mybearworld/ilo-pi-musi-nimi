@@ -20,6 +20,8 @@ type row struct {
 }
 
 var starter = flag.String("starter", "", "Pick a starter word instead of using the best one. Use \"random\" to choose one at random.")
+var worst = flag.Bool("worst", false, "Always use the worst available guess instead of the best one. This is not particularly interesting without also enabling -hard.")
+var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
 
 func parseFlags() string {
 	flag.Parse()
@@ -46,7 +48,7 @@ func run() string {
 	if err != nil {
 		return "Failed initializing readline: " + err.Error()
 	}
-	game := games.NewGame()
+	game := games.NewGame(*worst, *hard)
 	rows := []row{}
 	for nthGuess := 0; ; nthGuess++ {
 		var (
