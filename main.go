@@ -13,10 +13,10 @@ import (
 )
 
 type row struct {
-	guess            string
-	averageWordsLeft float64
-	realWordsLeft    int
-	information      games.Information
+	guess               string
+	projectedGuessScore float64
+	guessScore          int
+	information         games.Information
 }
 
 var starter = flag.String("starter", "", "Pick a starter word instead of using the best one. Use \"random\" to choose one at random.")
@@ -50,14 +50,14 @@ func run() string {
 	rows := []row{}
 	for nthGuess := 0; ; nthGuess++ {
 		var (
-			guess            string
-			averageWordsLeft float64
+			guess               string
+			projectedGuessScore float64
 		)
 		if nthGuess == 0 && *starter != "" {
 			guess = *starter
-			averageWordsLeft = game.ScoreGuess(guess)
+			projectedGuessScore = game.ScoreGuess(guess)
 		} else {
-			guess, averageWordsLeft, err = game.MakeGuess()
+			guess, projectedGuessScore, err = game.MakeGuess()
 			if err != nil {
 				return "Failed getting the next guess: " + err.Error()
 			}
@@ -67,9 +67,9 @@ func run() string {
 		if err != nil {
 			return "Failed getting input: " + err.Error()
 		}
-		realWordsLeft := game.Information(information)
+		guessScore := game.Information(information)
 		rows = append(rows, row{
-			guess: guess, averageWordsLeft: averageWordsLeft, realWordsLeft: realWordsLeft, information: information,
+			guess: guess, projectedGuessScore: projectedGuessScore, guessScore: guessScore, information: information,
 		})
 		if information.Success() {
 			break
@@ -77,11 +77,11 @@ func run() string {
 	}
 	fmt.Println()
 	for _, row := range rows {
-		realWordsLeftString := strconv.Itoa(row.realWordsLeft)
+		realWordsLeftString := strconv.Itoa(row.guessScore)
 		if row.information.Success() {
 			realWordsLeftString = "🥳"
 		}
-		fmt.Printf("%s %s %f %s\n", emojify(row.information), row.guess, row.averageWordsLeft, realWordsLeftString)
+		fmt.Printf("%s %s %f %s\n", emojify(row.information), row.guess, row.projectedGuessScore, realWordsLeftString)
 	}
 	return ""
 }
