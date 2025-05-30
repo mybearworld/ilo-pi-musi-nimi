@@ -24,7 +24,7 @@ var flagDictionary = flag.String("dictionary", "core,common", "The words to allo
 var flagGuessDictionary = flag.String("guessdictionary", "", "The words to allow for guessing. A comma separated list of core, common, uncommon, obscure or sanbox, which correspond to their respective Linku categories. (default is the regular word dictionary)")
 var starter = flag.String("starter", "", "Pick a starter word instead of using the strategy. Use \"random\" to choose one at random.")
 var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually. Use \"random\" to choose one at random.")
-var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n")
+var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n- alphabetical: Picks the first available word alphabetically.")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
 var guesses = flag.Int("guesses", 6, "The amount of guesses to allow. Set to 0 for unlimited guesses. (This might loop infinitely for some configurations.)")
 var strategy games.Strategy

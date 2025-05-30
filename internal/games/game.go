@@ -17,15 +17,16 @@ var (
 type Strategy string
 
 const (
-	MinWords Strategy = "minwords"
-	MaxWords Strategy = "maxwords"
-	Random   Strategy = "random"
+	MinWords     Strategy = "minwords"
+	MaxWords     Strategy = "maxwords"
+	Random       Strategy = "random"
+	Alphabetical Strategy = "alphabetical"
 )
 
 func ToStrategy(s string) *Strategy {
 	strategy := Strategy(s)
 	switch strategy {
-	case MinWords, MaxWords, Random:
+	case MinWords, MaxWords, Random, Alphabetical:
 		return &strategy
 	default:
 		return nil
@@ -54,6 +55,8 @@ func (g Game) MakeGuess() (string, float64, error) {
 		return g.makeGuessByWordScore()
 	case Random:
 		return g.makeRandomGuess()
+	case Alphabetical:
+		return g.makeAlphabeticalGuess()
 	default:
 		return "", 0, errors.New("unknown strategy")
 	}
@@ -81,6 +84,12 @@ func (g Game) makeGuessByWordScore() (string, float64, error) {
 func (g Game) makeRandomGuess() (string, float64, error) {
 	pool := g.pool()
 	guess := pool[rand.N(len(pool))]
+	return guess, g.ScoreGuess(guess), nil
+}
+
+func (g Game) makeAlphabeticalGuess() (string, float64, error) {
+	pool := g.pool()
+	guess := pool[0]
 	return guess, g.ScoreGuess(guess), nil
 }
 
