@@ -20,10 +20,11 @@ type row struct {
 	information         games.Information
 }
 
-var starter = flag.String("starter", "", "Pick a starter word instead of using the best one. Use \"random\" to choose one at random.")
+var starter = flag.String("starter", "", "Pick a starter word instead of using the strategy. Use \"random\" to choose one at random.")
 var word = flag.String("word", "", "Pick a word to solve for, instead of you needing to enter the inputs manually.")
-var worst = flag.Bool("worst", false, "Always use the worst available guess instead of the best one. This option works best with -hard.")
+var flagStrategy = flag.String("strategy", "minwords", "The strategy to guess with. Your options are:\n- minwords: Chooses the word that'll leave the fewest amount of words.\n- maxwords: Chooses the word that'll leave the highest amount of words.\n- random: Picks words at random.\n")
 var hard = flag.Bool("hard", false, "Require using previous hints in subsequent guesses.")
+var strategy games.Strategy
 
 func parseFlags() string {
 	flag.Parse()
@@ -34,6 +35,12 @@ func parseFlags() string {
 	}
 	if *word != "" && !slices.Contains(games.AllWords, *word) {
 		return "Word must be a valid 4-letter toki pona word."
+	}
+	parsedStrategy := games.ToStrategy(*flagStrategy)
+	if parsedStrategy == nil {
+		return "Invalid strategy: " + *flagStrategy
+	} else {
+		strategy = *parsedStrategy
 	}
 	return ""
 }
@@ -53,7 +60,7 @@ func run() string {
 	if err != nil {
 		return "Failed initializing readline: " + err.Error()
 	}
-	game := games.NewGame(*worst, *hard)
+	game := games.NewGame(strategy, *hard)
 	rows := []row{}
 	for nthGuess := 0; nthGuess < 6; nthGuess++ {
 		var (
