@@ -66,13 +66,13 @@ func inputInformation(rl *readline.Instance, guess string) (games.Information, e
 		succeeded := true
 		for index, letter := range line {
 			switch letter {
-			case 'g':
+			case 'l':
 				information.GreenLetters = append(information.GreenLetters, games.LetterWithIndex{
 					Letter: guessRunes[index], Index: index,
 				})
-			case 'y', 'x':
+			case 'j', 'p':
 				information.NonGreenLetters = append(information.NonGreenLetters, games.NonGreenLetter{
-					Letter: guessRunes[index], Index: index, IsYellow: letter == 'y',
+					Letter: guessRunes[index], Index: index, IsYellow: letter == 'j',
 				})
 			default:
 				succeeded = false
